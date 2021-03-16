@@ -1,0 +1,43 @@
+# 数组
+
+
+
+## [1 删除排序数组中的重复项](https://leetcode-cn.com/leetbook/read/top-interview-questions-easy/x2gy9m/)
+
+![image-20210316233738904](image-20210316233738904.png)
+
+懒得抄题了，直接粘上来
+
+我的解法：
+
+```python
+def function(nums):
+    if len(nums) == 1:
+        return 1
+    for i in range(len(nums)):
+        for j in range(i+1,len(nums)):
+            if (j == len(nums) - 1) and (nums[i] == nums[j]):
+                n = i
+                return n+1
+            if nums[j] == nums[i]:
+                continue
+
+            elif nums[j] > nums[i]:
+                nums[i+1] = nums[j]
+                break
+```
+
+主要思想是设置两个索引，一个`i`从数组开始遍历，一个`j=i+1`处开始遍历，当有`nums[j]>num[i]`的时候就把后面的值赋到前面来，如此反复就能使得前面存在一个不重复的数组，这个数组的结束条件是 `(j == len(nums) - 1) and (nums[i] == nums[j])`.。提交上去提示超时间，淦！
+
+网友解法：
+
+```python
+def removeDuplicates(nums) :
+    for i in range(len(nums) - 1, 0, -1):
+        if nums[i] == nums[i - 1]:
+            del nums[i]
+    return len(nums)
+```
+
+直接逆序索引，从后往前看，后一个与前一个相等就删除后一个，这也太简单了趴，我这个菜鸡搞了半小时还超时，惭愧...
+
