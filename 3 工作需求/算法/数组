@@ -41,3 +41,32 @@ def removeDuplicates(nums) :
 
 直接逆序索引，从后往前看，后一个与前一个相等就删除后一个，这也太简单了趴，我这个菜鸡搞了半小时还超时，惭愧...
 
+## [2 买卖股票的最佳时机 II](https://leetcode-cn.com/leetbook/read/top-interview-questions-easy/x2zsx1/)
+
+懒得抄题好吧：
+
+![image-20210317215848381](image-20210317215848381.png)
+
+我的解法：
+
+```python
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        sum = 0
+        for i in range(len(prices)-1):
+            if prices[i] < prices[i+1]:
+                money=prices[i+1] - prices[i]
+                sum = sum+money
+            else:
+                continue
+        return sum
+```
+
+使用贪心策略，每一次都考虑当前天和第二天，如果第二天股票大于第一天那就记录这个差值到`sum`，然后移动当前指针将第二天作为当前天重复这个策略记录，直到第二天的股票小于等于第一天就停止记录。一直记录到最后一天就返回`sum`的值就是卖股票的最佳收益。
+
+
+
+
+
+
+
