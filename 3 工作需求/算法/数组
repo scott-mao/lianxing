@@ -4,7 +4,7 @@
 
 ## [1 删除排序数组中的重复项](https://leetcode-cn.com/leetbook/read/top-interview-questions-easy/x2gy9m/)
 
-![image-20210316233738904](image-20210316233738904.png)
+![image-20210318114925199](image-20210318114925199.png)
 
 懒得抄题了，直接粘上来
 
@@ -45,7 +45,7 @@ def removeDuplicates(nums) :
 
 懒得抄题好吧：
 
-![image-20210317215848381](image-20210317215848381.png)
+![image-20210318114942656](image-20210318114942656.png)
 
 我的解法：
 
@@ -64,9 +64,89 @@ class Solution:
 
 使用贪心策略，每一次都考虑当前天和第二天，如果第二天股票大于第一天那就记录这个差值到`sum`，然后移动当前指针将第二天作为当前天重复这个策略记录，直到第二天的股票小于等于第一天就停止记录。一直记录到最后一天就返回`sum`的值就是卖股票的最佳收益。
 
+## 3 旋转数组
+
+懒得抄题选手再得一分！
+
+![image-20210318114854819](image-20210318114854819.png)
+
+方法一：这题一开始想的是一个一个的移动，从第一个开始找到他所需要移动到的位置进行替换，然后将该位置的数暂存在一个变量，在依次找到下一个位置的数，这样重复找的次数就是数组的长度，在有些情况下上运行良好，但是当数组长度为偶数的且移动位置k也是偶数的时候就会出现卡在一个位置的情况，进一步思考，当数组的长度只要是移动位置k的倍数的时候就会发生原地打转的情况，解决的方法是每次进行移动操作后都对移动后位置的索引进行记录，当下一次发现当前位置的索引被记录的时候就对当前位置加1，这样就避免了每次都重复在一个地方。
+
+下面是代码：
+
+```python
+def rotate( nums, k):
+    """
+    Do not return anything, modify nums in-place instead.
+    """
+    index = 0
+    temp_1 = nums[index]
+    l_nums = len(nums)
+    index_visted = []
+    for i in range(l_nums):
+        next_id = (index + k) % l_nums
+        if next_id in index_visted: %如果下一个位置已经被访问过
+            index = index + 1
+            temp_1 = nums[index]
+            next_id = (index + k) % l_nums
+        temp_2 = nums[next_id]
+        nums[next_id] = temp_1
+        temp_1 = temp_2
+        index = next_id
+        index_visted.append(index)
+```
+
+正好代码讲解里面有这个思想的讲解，废话不多说，直接偷图：
+
+
+![1610074370-FCoknu-image](1610074370-FCoknu-image.png)
+
+![1610074389-JbBnZF-image](1610074389-JbBnZF-image.png)
+
+如果`nums.length%k=0`，也就是数组长度为k的倍数，这个会原地打转，如下图所示
+
+![1610074663-JRcbFv-image](1610074663-JRcbFv-image.png)
+
+方法二：
+
+建立一个临时数组，在这个数组内装已经向后移动过的数组：
+
+偷图选手再次出现：
+
+![1610068849-iinvCs-image](1610068849-iinvCs-image.png)
 
 
 
+```python
+def rotate(nums,k):
+    list_nums  = nums.copy()
+    for i in range(len(nums)):
+        list_nums[(i+k)%len(nums)] = nums[i]
+    nums[:] = list_nums[:]
+```
+
+方法三：
+
+对原来的数组进行逆序翻转，然后只需要对前k%len(nums)个元素以及后面的元素进行翻转即可：
+
+![1610072480-yiAYFw-image](1610072480-yiAYFw-image.png)
+
+没错，又是偷的图。这种思想非常的amazing啊！
+
+```python
+def reverse(nums, start, end):
+    for i in range((end - start + 1) // 2):
+        nums[i + start], nums[end - i] = nums[end - i], nums[i + start]
+    return nums
 
 
+def rotate(nums, k):
+    """
+        Do not return anything, modify nums in-place instead.
+        """
+    reverse(nums, 0, len(nums)-1)
+    reverse(nums, 0, k % len(nums)-1)
+    reverse(nums, k % len(nums) , len(nums)-1)
+
+```
 
