@@ -33,3 +33,31 @@ In short, if you don’t know someone well enough to make an accurate estimation
 **split the bill:** go dutch, every pay for their own part
 
 **verbal:** somebody say something
+
+
+
+## [Why do we hear so much about China dominating AI, when (as of 2019) most of the leading AI researchers and research centers are in the US, UK, or Canada?](https://www.quora.com/Why-do-we-hear-so-much-about-China-dominating-AI-when-as-of-2019-most-of-the-leading-AI-researchers-and-research-centers-are-in-the-US-UK-or-Canada)
+
+Take a step back for a second and think about anything that has revolutionized the world.
+
+Take the internet for example. Did the masses understand what the **advent** of the internet would look like? *Absolutely not*. I would argue that the advent of the thing has no relationship with many people *anticipating* it to arrive. Nobody was **biting their lips** waiting for something like the internet to happen. The internet happened, and now, decades later, it has completely changed the way we live.
+
+**advent:** incoming of something
+
+**bite one’s lip:** stay silent
+
+By the late 1990s, everybody wanted to put stuff on the internet. People thought it would revolutionize the world. People were getting behind all these ideas, and venture capital money was easily flowing into building the infrastructure of the internet.
+
+![img](main-qimg-e12fe286417034e1b8c7b64835b38763.png)
+
+
+
+It later turned out that this was just another form of railway **mania**, where many people *thought* it would change everything, but it ended up being a much harder problem than we initially thought. As a consequence, many of the people, insiders and initial investors excluded, lost a lot of money.
+
+**mania:** love in an irrational way
+
+20 years later, everybody is getting behind AI without fully understanding what the hell they’re talking about. One of the biggest areas AI is turning a key profit is in areas like digital advertising, where companies such as Amazon, Google, and Facebook are selling digital real estate in exchange for your eyeballs and taps/clicks.
+
+If the future of artificial intelligence is making money off of webpage real estate via advertising, I’m not sure how any country could be happy about the “domination of AI”.
+
+**estate:** propert
