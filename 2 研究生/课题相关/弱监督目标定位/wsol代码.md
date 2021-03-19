@@ -424,6 +424,93 @@ if return_cam:
 >
 > ![image-20210318111105395](image-20210318111105395.png)
 
+回到之前构造模型的函：数
+
+```python
+def vgg16(architecture_type, pretrained=False, pretrained_path=None,
+          **kwargs):
+    config_key = '28x28' if kwargs['large_feature_map'] else '14x14'
+    layers = make_layers(configs_dict[architecture_type][config_key], **kwargs)
+    model = {'cam': VggCam,
+             'acol': VggAcol,
+             'spg': VggSpg,
+             'adl': VggCam,
+             'bg':VggCam}[architecture_type](layers, **kwargs)
+    if pretrained:
+        model = load_pretrained_model(model, architecture_type,
+                                      path=pretrained_path)
+    return model
+```
+
+现在 `model`  已经构建完成，接下来就是导入预训练模型的参数：
+
+```python
+model = load_pretrained_model(model, architecture_type,
+                                      path=pretrained_path)
+```
+
+> `load_pretrained`函数根据模型的架构导入相应的预训练参数，这个函数的的构成如下：
+>
+> ```python
+> def load_pretrained_model(model, architecture_type, path=None):
+>     if path is not None:
+>         state_dict = torch.load(os.path.join(path, 'vgg16.pth'))
+>     else:
+>         state_dict = load_url(model_urls['vgg16'], progress=True)
+> 
+>     if architecture_type == 'spg':
+>         state_dict = batch_replace_layer(state_dict)
+>     state_dict = remove_layer(state_dict, 'classifier.')
+>     state_dict = adjust_pretrained_model(state_dict, model)
+> 
+>     model.load_state_dict(state_dict, strict=False)
+>     return model
+>   
+> def remove_layer(state_dict, keyword):
+>     keys = [key for key in state_dict.keys()]
+>     for key in keys:
+>         if keyword in key:
+>             state_dict.pop(key)
+>     return state_dict
+> 
+>   
+> ```
+>
+> 需要从存放参数文件的地址导入相关的参数，如果本地没有预训练模型就下载导入，同时在导入的时候会去掉分类层的参数以及对于参数进行调整以让其适应当前的模型。
+
+这样整个模型就构建完成了：
+
+```python
+def _set_model(self):
+    num_classes = self._NUM_CLASSES_MAPPING[self.args.dataset_name]
+    print("Loading model {}".format(self.args.architecture))
+    model = wsol.__dict__[self.args.architecture](
+        dataset_name=self.args.dataset_name,
+        architecture_type=self.args.architecture_type,
+        pretrained=self.args.pretrained,
+        num_classes=num_classes,
+        large_feature_map=self.args.large_feature_map,
+        pretrained_path=self.args.pretrained_path,
+        adl_drop_rate=self.args.adl_drop_rate,
+        adl_drop_threshold=self.args.adl_threshold,
+        acol_drop_threshold=self.args.acol_threshold)
+    model = model.cuda()
+    print(model)
+    return model
+```
+
+最后将构建好的模型转换成cuda形式便于使用GPU运算。
+
+
+
+
+
+
+
+
+
+
+
 
 
 Images: 输入图片维度 $batch\_size*3*224*224$

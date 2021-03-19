@@ -150,3 +150,37 @@ def rotate(nums, k):
 
 ```
 
+
+
+## 4 存在重复元素
+
+https://leetcode-cn.com/leetbook/read/top-interview-questions-easy/x248f5/
+
+![image-20210319150722661](image-20210319150722661.png)
+
+偷懒第一名，题目描述如上，爱看不看。
+
+这题比较简单，思路也比较容易想，就是首先将数组排序，然后一个个检查就行：
+
+```python
+def containsDuplicate(nums):
+    nums.sort()
+    for i in range(len(nums)-1):
+        if nums[i] == nums[i+1]:
+            return True
+    return False
+```
+
+在下面的题解中看到另一种方法就是使用set函数，set函数能够创建一个无序不重复的元素集，如果对list使用set函数就会返回一个不重复的数组，那么只要统计这个数组元素个数与原来数组个数进行比较即可：
+
+```python
+def containsDuplicate(nums):
+		return len(nums)!=len(set(nums))
+```
+
+
+
+
+
+
+
