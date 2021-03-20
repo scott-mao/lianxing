@@ -1,0 +1,67 @@
+# 服务器
+
+##查看服务器使用
+
+- 使用`nvidia-smi`命令
+
+之前一直用pycharm远程连接，跑起来实验就会在`nvidia-smi`命令后显示一长串的东西，看起来是非常的不美观，而且上面还带有名字就很尴尬，就像下面在进程名字中一长串的那些，可以一眼看出来是那些用户在使用：
+
+![image-20210320213150917](image-20210320213150917.png)
+
+为了避免上面的情况，可以直接在终端中进行ssh连接后用终端命令运行代码：
+
+````shell
+
+CUDA_VISIBLE_DEVICES=1 python main.py --architecture vgg16 \
+               --wsol_method adl \
+               --experiment_name CUB_vgg16_ADL \
+               --pretrained TRUE \
+               --num_val_sample_per_class 5 \
+               --batch_size 32 \
+               --epochs 10 \
+               --lr 0.00002430601 \
+               --lr_decay_frequency 15 \
+               --weight_decay 5.00E-04 \
+               --override_cache FALSE \
+               --workers 4 \
+               --box_v2_metric True \
+               --iou_threshold_list 30 50 70 \
+               --eval_checkpoint_type last
+````
+
+上面的命令就会直接运行main.py文件，后面跟着的是传入其中的参数值，前面的`CUDA_VISIBLE_DEVICES=1 `用来指定使用的GPU。在使用这种方法运行程序的好处在于可以开启多个连接同时运行多个程序，并且在`nvidia-smi`命令后显示的进程名是python，非常的简洁，非常的amazing啊。
+
+- 使用`top`命令
+
+当然即便是使用终端ssh运行程序依旧可以查看当前使用GPU的人是谁，其占用的内存是多少等信息，这个命令就是`top`，该命令会实时动态地查看系统的整体运行情况
+
+![image-20210320215223084](image-20210320215223084.png)
+
+具体各个参数的含义参见[Linux - top命令查看服务器CPU与内存占用](https://blog.csdn.net/J080624/article/details/80526310)
+
+## 在后台运行程序
+
+担心需要一直开着计算机运行程序？可以使用命令使程序在服务器的后端运行，即便电脑关机了也不受影响：
+
+```shell
+nohup python ****.py > filename.log&
+```
+
+其中****.py是你想要运行的python程序，filename.log是存储的日志文件，我们可以通过查看filename.log来查看我们的程序的运行情况。注意需要敲击两次回车键。
+
+- 查看运行情况
+
+使用`vim filename.log`查看，可以查看其中记录的内容但是无法动态查看。
+
+使用`tail -f filename.log`可以动态的显示程序的运行情况，但是需要采用CTRIL + C的方式停止查看。
+
+- 在服务器后端结束程序
+
+在使用nohup这个命令的时候，会在命令行窗口中显示一个进程号PID，如果忘记了这进程号，我们也可以使用ps这个命令查看进程号。想要在服务器的后端结束这个程序，我们只需要输入：
+
+```sh
+kill -9 PID(进程号)
+```
+
+其中PID就是我们需要结束的程序的进程号。
+
