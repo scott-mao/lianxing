@@ -1,4 +1,4 @@
-# 服务器
+# >服务器
 
 ##查看服务器使用
 
@@ -12,7 +12,7 @@
 
 ````shell
 
-CUDA_VISIBLE_DEVICES=1 python main.py --architecture vgg16 \
+tai python main.py --architecture vgg16 \
                --wsol_method adl \
                --experiment_name CUB_vgg16_ADL \
                --pretrained TRUE \
