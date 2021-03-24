@@ -309,9 +309,46 @@ def plusOne(self,digits):
 	return digits
 ```
 
+# 8 移动零
 
+![image-20210324085431231](image-20210324085431231.png)
 
+拿到这个题的第一个想法就是从头开始遍历，如果是零就删除然后在结尾添加一个0，这样做的问题是在删除和添加操作后原来的数组索引会被改变。于是想到可以再加一个数组，然后对原数组进行遍历，将所有非零元素放在这个数组里，其他元素置零放在最后就行，但是原题说明不能拷贝额外数组，所以这种方法也不可行。
 
+- 双指针，我小脑袋灵机一动，只要将所有的0元素替换到后面就行，于是新生一计，一个指针用来找0元素，当找到的时候就在当前索引基础上在找非零元素，然后两个元素互换，这样一直找到元素末尾，最终所有的0元素就会放在最后面，代码如下：
+
+```
+def moveZeroes(self,nums):
+	i=0
+	while i<len(nums)-1:
+		if nums[i]!=0:
+			i = i+1
+			continue
+		j = i
+		while j!=len(nums)-1:
+			if nums[j] != 0:
+					break
+		j = j+1
+		nums[i],nums[j] = nums[j],nums[i]
+		i = i+1
+	return nums
+```
+
+同样是双指针的思想，网友的代码就简洁太多：
+
+```python
+    def moveZeroes(self,nums):
+        fast = 0
+        slow = 0
+        while fast<len(nums):
+            if nums[fast]!=0:
+                nums[fast],nums[slow] = nums[slow],nums[fast]
+                slow = slow + 1
+            fast = fast + 1
+        return nums
+```
+
+在上面的代码中slow指针用来指向零元素，fast指针用来指向非零元素。
 
 
 
