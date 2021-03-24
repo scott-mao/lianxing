@@ -1,4 +1,4 @@
-# a数组
+# yia数组
 
 
 
@@ -226,6 +226,90 @@ def singleNumber(self,nums):
 		result = result^nums[i]
 	return result
 ```
+
+# 6 两个数组的交集 II
+
+![image-20210322155137256](image-20210322155137256.png)
+
+- 方法一：这个题可以使用双指针的思想解决，首先将两个数组排序，然后初始化两个指针分别指向两个数组的起始，等对应的数相等的时候就存储这个数并移动指针，当一个数组的值较小的时候，移动该数组对应指针，直到指针到达其中一个数组的最后，talk is cheap，show me the code:
+
+```python
+def intersect(nums1,nums2):
+    nums1.sort()
+    nums2.sort()
+    stop = 0
+    i, j = 0, 0
+    inter = []
+    while not ((i == len(nums1)) or (j == len(nums2))):
+        if nums1[i] == nums2[j]:
+            inter.append(nums1[i])
+            i = i + 1
+            j = j + 1
+        elif nums1[i] > nums2[j]:
+            j = j + 1
+        elif nums1[i] < nums2[j]:
+            i = i + 1
+    return inter
+```
+
+- 方法二：使用哈希表解决这个题
+
+通过collection中的Counter对象来对计数，其中Counter是字典的一个子类，他可以计数数字或者字符等，我们通过其对nums1中出现的数字进行计数并存储到m中去，其中num1是数据较多的那个数组，然后对num2中的每一个元素进行遍历，只要该元素在m中出现过就将其加入到新的存储交集的列表，然后对m中该元素的次数减一，重复这个过程。**散列表**（**Hash table**，也叫**哈希表**），是根据[键](https://zh.wikipedia.org/wiki/鍵)（Key）而直接访问在内存储存位置的[数据结构](https://zh.wikipedia.org/wiki/数据结构)。
+
+![fig1](350_fig1.gif)
+
+```python
+def intersect(nums1,nums2):
+    if len(nums1)<len(nums2):
+        return self.intersect(nums2,nums1)
+
+    m = collections.Counter()
+    inter = []
+    for num in nums1:
+        m[num] = m[num] +1
+    for num in nums2:
+        if (num in m) and (m[num]!=0):
+            inter.append(num)
+            m[num] = m[num]-1
+    return inter
+```
+
+# 7.加一
+
+![image-20210323101932950](image-20210323101932950.png)
+
+- 方法一：将数组转换为数进行加一，然后再将数转换为数组，想法十分简单了可以说就是需要用到两个循环：
+
+```python
+def plusOne(digits):
+    num = 0
+    for i in range(len(digits)):
+        num = num+digits[i] * 10**(len(digits)-i-1)
+    num_plus = num+1
+    result = []
+    while num_plus >0:
+        i =num_plus%10
+        result.append(i)
+        num_plus =  num_plus // 10
+    result.reverse()
+    return result
+```
+
+- 方法二：利用加法运算的性质对数组进行运算，想法是如果不是9的话就直接加1，如果是9也就是加一后变成10的话就进行向高位进位本位置零，重复数组长度次数的这个过程，如果一直进位，那就创建一个新的长度比原来加1的数组使得最高位为1：
+
+```python
+def plusOne(self,digits):
+	for i in range(len(digits) - 1, -1, -1):
+		digits[i] = digits[i] + 1
+		if digits[i] != 10:
+			return digits
+		digits[i] = 0
+	digits = [0] * (len(digits) + 1)
+	digits[0] = 1
+	return digits
+```
+
+
 
 
 
