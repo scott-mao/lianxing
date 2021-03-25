@@ -350,5 +350,126 @@ def moveZeroes(self,nums):
 
 在上面的代码中slow指针用来指向零元素，fast指针用来指向非零元素。
 
+## 9 两数之和
+
+![image-20210325085031808](image-20210325085031808.png)
+
+- 方法1：看到这个题的第一眼那必是暴力破解，直接两个循环搞起来对所有组合遍历一遍就完事了，但是这样的时间成本为 $O(n^2)$ ，先不管了，代码先搞出来：
+
+```python
+def twoSum(self,nums,target):
+    result = []
+    for i in range(len(nums)):
+        for j in range(i+1,len(nums)):
+            if nums[i]+nums[j] == target:
+                result.append(i)
+                result.append(j)
+                return result
+```
+
+- 方法2：使用哈希表，哈希表的详细内容可以看算法-数据结构部分。上面暴力破解的方式再查寻元素的过程中用到一个循环，而是用哈希表查找元素的时间复杂度为 $O(1)$，这样就简化了查找过程。具体原理哈希表的键用来存储对应数组的值，其值用来存储对应数组的索引，然后遍历每一个元素，计算其余目标target的查找并在哈希表中进行查找。
+
+  ```python
+  def twoSum(self,nums,target):
+      hashtable = dict()
+      for i in range(len(nums)):
+          if (target - nums[i]) in hashtable:
+              return [hashtable[target-nums[i]],i]
+          hashtable[nums[i]] = i
+  ```
+
+  
+
+## 10 有效的数独
+
+![image-20210325113014149](image-20210325113014149.png)
+
+![image-20210325113027716](image-20210325113027716.png)
+
+
+
+![image-20210325113038880](image-20210325113038880.png)
+
+看到这个题的第一个想法就是循环遍历三次，分别对行列和块进行遍历检查有无重复元素，于是开始着手编写代码：
+
+```python
+    def row_test(row):
+        hashtable = dict()
+        for i in range(1,10,1):
+            hashtable[i] = 0
+        for num in range(len(row)):
+            if row[num].isalnum():
+                if hashtable[int(row[num])] == 1:
+                    return False
+                hashtable[int(row[num])] = 1
+        return True
+```
+
+首先编写了一个行检测重复的代码，想着列是不是转置一下变成行也能套过去，结果自带数组类型不能够，于是懒得在编写列的以及块的检查函数，直接看大佬们怎么做的。
+
+- 使用哈希表记录次数，一次遍历，对每一个行列以及块都生成一个哈希表用来存储其中元素出现的次数，当出现次数大于1的时候就返回False，否则就是True：
+
+```python
+    def isValidSudoku(self,board):
+        row = [{} for i in range(9)]
+        col = [{} for i in range(9)]
+        block = [{} for i in range(9)]
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == '.':
+                    continue
+                else:
+                    num = int(board[i][j])
+                    block_idx = (i//3)*3 +j//3
+                    block[block_idx][num] = block[block_idx].get(num,0)+1
+                    row[i][num] = row[i].get(num,0)+1
+                    col[j][num] = col[j].get(num,0)+1
+                    if block[block_idx][num]>1 or row[i][num]>1 or col[j][num]>1:
+                        return False
+        return True
+```
+
+精髓在于index的计算以及相当使用哈希表来进行重复检测。
+
+参考解题思路：https://leetcode-cn.com/problems/valid-sudoku/solution/you-xiao-de-shu-du-by-leetcode/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
