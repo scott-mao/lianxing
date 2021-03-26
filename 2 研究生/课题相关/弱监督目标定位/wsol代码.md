@@ -62,7 +62,7 @@ def main():
 - 在进行一次评价之后就开始对模型进行训练，整个训练的次数由config文件中epoch来指定，训练的过程中需要对学习率进行调整，对训练后模型的表现进行评价以及保存model
 - 训练过后就需要在测试集上查看表现并对模型表现结果进行输出
 
-## Trainer()类的构建
+## 1 Trainer()类的构建
 
 在设置好数据集后，我们对该模型进行debug调试。
 
@@ -149,6 +149,8 @@ Trainer这个类中含有的函数较多，我们一个个慢慢解读：
 
 这些带有单个下划线的变量仅供内部使用
 
+### 1.1 类的初始化
+
 之后进行了类中变量的初始化：
 
 ```python
@@ -178,7 +180,7 @@ Trainer这个类中含有的函数较多，我们一个个慢慢解读：
 
 然后分别设置了一个随机数，对评价指标进行设置，对模型进行初始化
 
-### 模型初始化
+#### 1.1.1模型初始化
 
 ```python
  self.model = self._set_model()
@@ -424,7 +426,7 @@ if return_cam:
 >
 > ![image-20210318111105395](image-20210318111105395.png)
 
-回到之前构造模型的函：数
+回到之前构造模型：
 
 ```python
 def vgg16(architecture_type, pretrained=False, pretrained_path=None,
@@ -501,7 +503,173 @@ def _set_model(self):
 
 最后将构建好的模型转换成cuda形式便于使用GPU运算。
 
+#### 1.1.2 其它初始化配置
 
+跳出模型构建的函数，我们来到Train这个类的初始化函数：
+
+```python
+def __init__(self):
+    self.args = get_configs()
+    set_random_seed(self.args.seed)
+    print(self.args)
+    self.performance_meters = self._set_performance_meters()
+    self.reporter = self.args.reporter
+    self.model = self._set_model()
+    self.cross_entropy_loss = nn.CrossEntropyLoss().cuda()
+    self.optimizer = self._set_optimizer() #设置优化方式
+    self.loaders = get_data_loader(
+        data_roots=self.args.data_paths,
+        metadata_root=self.args.metadata_root,
+        batch_size=self.args.batch_size,
+        workers=self.args.workers,
+        resize_size=self.args.resize_size,
+        crop_size=self.args.crop_size,
+        proxy_training_set=self.args.proxy_training_set,
+        num_val_sample_per_class=self.args.num_val_sample_per_class)
+```
+
+可以看到在设置完模型之后究竟了loss函数的设置，loss使用交叉熵损失函数；然后对优化器进行设置；最后对数据进行导入，在`get_data_loader`函数中对于导入的数据做预处理
+
+##### 优化器设置
+
+```python
+def _set_optimizer(self):
+    param_features = []
+    param_classifiers = []
+
+    def param_features_substring_list(architecture):
+        for key in self._FEATURE_PARAM_LAYER_PATTERNS:
+            if architecture.startswith(key):
+                return self._FEATURE_PARAM_LAYER_PATTERNS[key]
+        raise KeyError("Fail to recognize the architecture {}"
+                       .format(self.args.architecture))
+
+    for name, parameter in self.model.named_parameters():
+        if string_contains_any(
+                name,
+                param_features_substring_list(self.args.architecture)):
+            if self.args.architecture in ('vgg16', 'inception_v3'):
+                param_features.append(parameter)
+            elif self.args.architecture == 'resnet50':
+                param_classifiers.append(parameter)
+        else:
+            if self.args.architecture in ('vgg16', 'inception_v3'):
+                param_classifiers.append(parameter)
+            elif self.args.architecture == 'resnet50':
+                param_features.append(parameter)
+
+    optimizer = torch.optim.SGD([
+        {'params': param_features, 'lr': self.args.lr},
+        {'params': param_classifiers,
+         'lr': self.args.lr * self.args.lr_classifier_ratio}],
+        momentum=self.args.momentum,
+        weight_decay=self.args.weight_decay,
+        nesterov=True)
+    return optimizer
+```
+
+这里主要对模型的参数进行添加，首先对模型中feature提取层以及classifier分类层中的参数进行提取分别存放在`param_features`和`param_classifiers`中去，然后就设置优化器，优化器选用随机梯度下降，其中feature层的学习率就用设置的`self.arg.lr`，而分类层的学习率则会在该基础上乘以一个系数`self.args.lr_classifier_ratio`在进行学习过程中使用`momentun`策略(详情见视觉基础)，同时每隔一定的epochs就进行权重衰减，创建完成这个对象就进行返回。
+
+##### 数据预处理
+
+```python
+self.loaders = get_data_loader(
+            data_roots=self.args.data_paths,
+            metadata_root=self.args.metadata_root,
+            batch_size=self.args.batch_size,
+            workers=self.args.workers,
+            resize_size=self.args.resize_size,
+            crop_size=self.args.crop_size,
+            proxy_training_set=self.args.proxy_training_set,
+            num_val_sample_per_class=self.args.num_val_sample_per_class)
+```
+
+对数据进行读取与整理，我们进入`get_data_loader`函数中一探究竟：
+
+```python
+def get_data_loader(data_roots, metadata_root, batch_size, workers,
+                    resize_size, crop_size, proxy_training_set,
+                    num_val_sample_per_class=0):
+    dataset_transforms = dict(
+        train=transforms.Compose([
+            transforms.Resize((resize_size, resize_size)),
+            transforms.RandomCrop(crop_size),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(_IMAGE_MEAN_VALUE, _IMAGE_STD_VALUE)
+        ]),
+        val=transforms.Compose([
+            transforms.Resize((crop_size, crop_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(_IMAGE_MEAN_VALUE, _IMAGE_STD_VALUE)
+        ]),
+        test=transforms.Compose([
+            transforms.Resize((crop_size, crop_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(_IMAGE_MEAN_VALUE, _IMAGE_STD_VALUE)
+        ]))
+
+    loaders = {
+        split: DataLoader(
+            WSOLImageLabelDataset(
+                data_root=data_roots[split],
+                metadata_root=os.path.join(metadata_root, split),
+                transform=dataset_transforms[split],
+                proxy=proxy_training_set and split == 'train',
+                num_sample_per_class=(num_val_sample_per_class
+                                      if split == 'val' else 0)
+            ),
+            batch_size=batch_size,
+            shuffle=split == 'train',
+            num_workers=workers)
+        for split in _SPLITS
+    }
+    return loaders
+
+```
+
+从上面可以看出来在不同的阶段对于图片的处理工作也略有不同，训练阶段还进行了随机裁剪和水平翻转这样的扩充数据的方式，通关建立一个·`loader`实现对图片的预处理与读取。
+
+### 1.2 类中主要函数
+
+下面我们按照这些函数在主函数中的使用顺序依次进行介绍，在主函数中首先对Trainer这个类进行了创建，然后在进行训练之前首先对其进行评价
+
+```python
+def main():
+    trainer = Trainer()
+
+    print("===========================================================")
+    print("Start epoch 0 ...")
+    trainer.evaluate(epoch=0, split='val')
+    trainer.print_performances()
+    trainer.report(epoch=0, split='val')
+    trainer.save_checkpoint(epoch=0, split='val')
+    print("Epoch 0 done.")
+
+    for epoch in range(trainer.args.epochs):
+        print("===========================================================")
+        print("Start epoch {} ...".format(epoch + 1))
+        trainer.adjust_learning_rate(epoch + 1)
+        train_performance = trainer.train(split='train')
+        trainer.report_train(train_performance, epoch + 1, split='train')
+        trainer.evaluate(epoch + 1, split='val')
+        trainer.print_performances()
+        trainer.report(epoch + 1, split='val')
+        trainer.save_checkpoint(epoch + 1, split='val')
+        print("Epoch {} done.".format(epoch + 1))
+
+    print("===========================================================")
+    print("Final epoch evaluation on test set ...")
+
+    trainer.load_checkpoint(checkpoint_type=trainer.args.eval_checkpoint_type)
+    # trainer.load_checkpoint('best')
+    trainer.evaluate(trainer.args.epochs, split='test')
+    trainer.print_performances()
+    trainer.report(trainer.args.epochs, split='test')
+    trainer.save_performances()
+```
+
+在构建完这个类后就进行
 
 
 
